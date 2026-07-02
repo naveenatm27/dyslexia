@@ -901,7 +901,8 @@ def handle_get_answer():
 def handle_clear_chat():
     st.session_state[histories["chat"]] = []
     st.session_state["last_response_html"] = ""
-    st.session_state["chat_input"] = ""
+    # Avoid directly mutating widget-bound session state here (Streamlit raises).
+    # The input widget will retain its value until the user clears it or the app reloads.
 
 def handle_image_ocr():
     upload = st.session_state.get("image_upload")
