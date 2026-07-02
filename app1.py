@@ -1004,20 +1004,39 @@ def handle_math_solve():
 # ------------------ UI: pages ------------------
 if feature == "💬 Chat":
     st.header("💬 Chat")
-    with st.form("chat_form", clear_on_submit=True):
-        st.text_input("Ask Norman anything:", key="chat_input")
-        st.selectbox("Response style:", ["supportive", "concise", "detailed", "encouraging"], key="style_select")
-        st.checkbox("Use OpenAI", value=OPENAI_OK, key="use_openai")
-        submitted = st.form_submit_button("Send")
-        if submitted:
-            handle_get_answer()
-    if st.session_state.get("last_response_html"):
-        st.markdown("### Norman's Response:", unsafe_allow_html=True)
-        st.components.v1.html(st.session_state["last_response_html"], height=300)
-    display_history(histories["chat"], "Conversation")
+    # Display chat history
+    chat_history = st.session_state.get(histories["chat"], [])
+    for sender, message in chat_history:
+        with st.chat_message("user" if sender.lower().startswith("you") else "assistant"):
+            st.write(message)
+    # Chat input
+    user_input = st.chat_input("Ask Norman anything:")
+    if user_input:
+        with st.chat_message("user"):
+            st.write(user_input)
+        # Get response
+        reply = get_ai_response(
+            user_input,
+            use_openai=OPENAI_OK,
+            style="supportive"
+        )
+        with st.chat_message("assistant"):
+            st.write(reply)
+        # Save to history
+        st.session_state[histories["chat"]].append(("You", user_input))
+        st.session_state[histories["chat"]].append(("Norman", reply))
+        award_points(1)
+        # Optional audio
+        try:
+            audio_path = text_to_speech_gtts(reply)
+            if audio_path:
+                st.audio(audio_path)
+        except Exception:
+            pass
+    # Clear chat button
     if st.button("Clear Chat"):
         handle_clear_chat()
-        st.experimental_rerun()
+        st.rerun()
 
 elif feature == "🎤 Voice Input":
     st.header("🎤 Voice Input")
@@ -1028,8 +1047,8 @@ elif feature == "🎤 Voice Input":
             handle_audio_transcribe()
     with col2:
         if st.button("Clear Audio History"):
-            st.session_state[histories["audio"]] = []
-            st.experimental_rerun()
+        st.session_state[histories["audio"]] = []
+        st.rerun()
     display_history(histories["audio"], "Audio History")
 
 elif feature == "🖼️ Image to Text":
@@ -1041,8 +1060,8 @@ elif feature == "🖼️ Image to Text":
             handle_image_ocr()
     with col2:
         if st.button("Clear Image History"):
-            st.session_state[histories["image"]] = []
-            st.experimental_rerun()
+        st.session_state[histories["image"]] = []
+        st.rerun()
     display_history(histories["image"], "Image OCR History")
 
 
@@ -1055,8 +1074,8 @@ elif feature == "📹 Video to Text":
             handle_video_transcribe()
     with col2:
         if st.button("Clear Video History"):
-            st.session_state[histories["video"]] = []
-            st.experimental_rerun()
+        st.session_state[histories["video"]] = []
+        st.rerun()
     display_history(histories["video"], "Video History")
 
 
@@ -1069,9 +1088,9 @@ elif feature == "🧮 Math Assistant":
             handle_math_solve()
     with col2:
         if st.button("Clear Math History"):
-            st.session_state[histories["math"]] = []
-            st.session_state["math_input"] = ""
-            st.experimental_rerun()
+        st.session_state[histories["math"]] = []
+        st.session_state["math_input"] = ""
+        st.rerun()
     display_history(histories["math"], "Math History")
 
 elif feature == "🔤 Pronunciation":
@@ -1119,7 +1138,7 @@ elif feature == "🔎 Tone Detection":
         if st.button("Clear Tone History"):
             st.session_state[histories["tone"]] = []
             st.session_state["tone_input"] = ""
-            st.experimental_rerun()
+            st.rerun()
     display_history(histories["tone"], "Tone History")
 
 elif feature == "📚 Grammar Correction":
@@ -1156,7 +1175,7 @@ elif feature == "📚 Grammar Correction":
         if st.button("Clear Grammar History"):
             st.session_state[histories["grammar"]] = []
             st.session_state["grammar_input"] = ""
-            st.experimental_rerun()
+            st.rerun()
     display_history(histories["grammar"], "Grammar History")
 
 elif feature == "🌍 Translate & Speak":
@@ -1196,7 +1215,7 @@ elif feature == "🌍 Translate & Speak":
         if st.button("Clear Translation History"):
             st.session_state[histories["translate"]] = []
             st.session_state["translate_input"] = ""
-            st.experimental_rerun()
+            st.rerun()
     display_history(histories["translate"], "Translate History")
 
 elif feature == "🎮 Gamified Learning":
@@ -1342,7 +1361,7 @@ elif feature == "📐 Geometry / Diagram Reader":
     with col2:
         if st.button("Clear Geometry History"):
             st.session_state[histories["geo"]] = []
-            st.experimental_rerun()
+            st.rerun()
     display_history(histories["geo"], "Geometry / Diagram History")
 
 else:
