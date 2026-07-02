@@ -1047,8 +1047,8 @@ elif feature == "🎤 Voice Input":
             handle_audio_transcribe()
     with col2:
         if st.button("Clear Audio History"):
-        st.session_state[histories["audio"]] = []
-        st.rerun()
+            st.session_state[histories["audio"]] = []
+            st.rerun()
     display_history(histories["audio"], "Audio History")
 
 elif feature == "🖼️ Image to Text":
@@ -1060,8 +1060,8 @@ elif feature == "🖼️ Image to Text":
             handle_image_ocr()
     with col2:
         if st.button("Clear Image History"):
-        st.session_state[histories["image"]] = []
-        st.rerun()
+            st.session_state[histories["image"]] = []
+            st.rerun()
     display_history(histories["image"], "Image OCR History")
 
 
@@ -1074,8 +1074,8 @@ elif feature == "📹 Video to Text":
             handle_video_transcribe()
     with col2:
         if st.button("Clear Video History"):
-        st.session_state[histories["video"]] = []
-        st.rerun()
+            st.session_state[histories["video"]] = []
+            st.rerun()
     display_history(histories["video"], "Video History")
 
 
@@ -1088,9 +1088,9 @@ elif feature == "🧮 Math Assistant":
             handle_math_solve()
     with col2:
         if st.button("Clear Math History"):
-        st.session_state[histories["math"]] = []
-        st.session_state["math_input"] = ""
-        st.rerun()
+            st.session_state[histories["math"]] = []
+            st.session_state["math_input"] = ""
+            st.rerun()
     display_history(histories["math"], "Math History")
 
 elif feature == "🔤 Pronunciation":
