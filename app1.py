@@ -850,11 +850,40 @@ def handle_get_answer():
     if not user_input:
         st.warning("Please enter a question.")
         return
+    # Primary response (will try Ollama/OpenAI inside get_ai_response)
     reply = get_ai_response(
         user_input,
         use_openai=st.session_state.get("use_openai", OPENAI_OK),
         style=st.session_state.get("style_select", "supportive"),
     )
+
+    # If the reply looks like a generic fallback, try direct calls to preferred backends
+    def _is_generic_fallback(r):
+        if not r:
+            return True
+        low = r.lower()
+        patterns = [
+            "try using the", "try our other", "i can help you with this when i'm", "let's check out the",
+            "that's a great question! i can help you when i'm", "please enter some text."
+        ]
+        return any(p in low for p in patterns)
+
+    if _is_generic_fallback(reply):
+        # Try Ollama directly
+        try:
+            oll = call_ollama_chat(user_input)
+            if oll and not _is_generic_fallback(oll):
+                reply = oll
+        except Exception:
+            pass
+        # If still generic and OpenAI is available, try OpenAI directly
+        if _is_generic_fallback(reply) and OPENAI_OK:
+            try:
+                oai = call_openai_chat(user_input, persona_prompt=NORMAN_SYSTEM_PROMPT + f" Style: {st.session_state.get('style_select','supportive')}.")
+                if oai and not _is_generic_fallback(oai):
+                    reply = oai
+            except Exception:
+                pass
     st.session_state[histories["chat"]].append(("You", user_input))
     st.session_state[histories["chat"]].append(("Norman", reply))
     award_points(1)
