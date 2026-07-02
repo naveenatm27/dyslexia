@@ -1004,35 +1004,18 @@ def handle_math_solve():
 # ------------------ UI: pages ------------------
 if feature == "💬 Chat":
     st.header("💬 Chat")
-    # Display chat history
-    chat_history = st.session_state.get(histories["chat"], [])
-    for sender, message in chat_history:
-        with st.chat_message("user" if sender.lower().startswith("you") else "assistant"):
-            st.write(message)
-    # Chat input
-    user_input = st.chat_input("Ask Norman anything:")
-    if user_input:
-        with st.chat_message("user"):
-            st.write(user_input)
-        # Get response
-        reply = get_ai_response(
-            user_input,
-            use_openai=OPENAI_OK,
-            style="supportive"
-        )
-        with st.chat_message("assistant"):
-            st.write(reply)
-        # Save to history
-        st.session_state[histories["chat"]].append(("You", user_input))
-        st.session_state[histories["chat"]].append(("Norman", reply))
-        award_points(1)
-        # Optional audio
-        try:
-            audio_path = text_to_speech_gtts(reply)
-            if audio_path:
-                st.audio(audio_path)
-        except Exception:
-            pass
+    # Input at the top with a Send button, then show conversation below
+    col_in, col_send = st.columns([8, 1])
+    with col_in:
+        st.text_input("Ask Norman anything:", key="chat_input", placeholder="Type a question and press Send")
+    with col_send:
+        if st.button("Send", key="send_chat"):
+            handle_get_answer()
+            st.rerun()
+
+    # Render conversation history below the input
+    display_history(histories["chat"], "Chat")
+
     # Clear chat button
     if st.button("Clear Chat"):
         handle_clear_chat()
