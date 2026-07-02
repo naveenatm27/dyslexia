@@ -1004,6 +1004,30 @@ def handle_math_solve():
 # ------------------ UI: pages ------------------
 if feature == "💬 Chat":
     st.header("💬 Chat")
+    # Show AI backend status so user knows which service is available
+    col_status, _ = st.columns([6,2])
+    with col_status:
+        openai_key_present = bool(OPENAI_KEY)
+        # Quick check for Ollama availability
+        try:
+            ollama_ok = False
+            resp = call_ollama_chat("Hello")
+            if resp:
+                ollama_ok = True
+        except Exception:
+            ollama_ok = False
+        status_lines = []
+        status_lines.append(f"OpenAI API key present: {openai_key_present}")
+        status_lines.append(f"OpenAI validated: {OPENAI_OK}")
+        status_lines.append(f"Ollama reachable: {ollama_ok}")
+        st.markdown("**AI backend status:** " + " — ".join(status_lines))
+        st.markdown("If you see all backends as False, add an `OPENAI_API_KEY` to `.streamlit/secrets.toml` or set environment variable `OPENAI_API_KEY`.")
+        if st.button("Test AI", key="test_ai"):
+            test_q = "What is 2+2?"
+            test_reply = get_ai_response(test_q, use_openai=st.session_state.get("use_openai", OPENAI_OK))
+            st.markdown("**Test question:** " + test_q)
+            st.markdown("**Raw reply:**")
+            st.write(test_reply)
     # Input at the top with a Send button, then show conversation below
     col_in, col_send = st.columns([8, 1])
     with col_in:
